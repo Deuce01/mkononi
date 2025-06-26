@@ -1,0 +1,2 @@
+web: gunicorn mkononi_backend.wsgi --log-file -
+worker: celery -A mkononi_backend worker --loglevel=info
