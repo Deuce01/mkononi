@@ -7,7 +7,7 @@ from .views import (
 from .webhooks import whatsapp_webhook, ussd_webhook
 from .health import health_check
 from .auth_views import (
-    register_worker, register_employer, login_worker, get_user_profile
+    register_worker, register_employer, login_worker, login_employer, get_user_profile
 )
 
 router = DefaultRouter()
@@ -22,6 +22,7 @@ urlpatterns = [
     path('api/auth/register/worker/', register_worker, name='register_worker'),
     path('api/auth/register/employer/', register_employer, name='register_employer'),
     path('api/auth/login/worker/', login_worker, name='login_worker'),
+    path('api/auth/login/employer/', login_employer, name='login_employer'),
     path('api/auth/profile/', get_user_profile, name='get_user_profile'),
     path('webhook/whatsapp/', whatsapp_webhook, name='whatsapp_webhook'),
     path('webhook/ussd/', ussd_webhook, name='ussd_webhook'),

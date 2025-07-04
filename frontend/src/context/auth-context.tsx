@@ -60,9 +60,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (data: any) => {
     try {
-      // This would be used for employer login - we need to implement this
-      // For now, just throw an error
-      throw new Error('Login not implemented yet');
+      // Login as employer using our auth service
+      const response = await authService.loginEmployer(data.email, data.password);
+      
+      // Set user data
+      await fetchUser();
     } catch (error) {
       throw error;
     }
@@ -75,8 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         username: data.email.split('@')[0], // Generate username from email
         email: data.email,
         password: data.password,
-        company_name: data.name,
-        phone: data.phone_number,
+        company_name: data.company_name,
+        phone: data.phone,
         sector: data.sector
       });
       

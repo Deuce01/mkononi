@@ -122,6 +122,14 @@ export const authService = {
     return response.data;
   },
 
+  async loginEmployer(email: string, password: string): Promise<{ employer: Employer; tokens: AuthResponse }> {
+    const response = await api.post('/auth/login/employer/', { email, password });
+    // Store tokens
+    localStorage.setItem('access_token', response.data.tokens.access);
+    localStorage.setItem('refresh_token', response.data.tokens.refresh);
+    return response.data;
+  },
+
   async registerWorker(data: WorkerRegistration): Promise<{ worker: WorkerProfile; tokens: AuthResponse }> {
     const response = await api.post('/auth/register/worker/', data);
     // Store tokens
