@@ -165,9 +165,9 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/hour',
-        'user': '1000/hour',
-        'webhook': '60/min',
+        'anon': '10000/hour',  # Increased for development
+        'user': '10000/hour',  # Increased for development
+        'webhook': '600/min',  # Increased for development
     }
 }
 
@@ -260,3 +260,4 @@ LOGGING = {
         },
     },
 }
+# Reload trigger

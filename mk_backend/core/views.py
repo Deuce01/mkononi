@@ -7,7 +7,7 @@ from django.core.cache import cache
 from django.db.models import Prefetch
 from .models import WorkerProfile, Employer, JobPosting, Application, MatchScore
 from .serializers import (
-    WorkerProfileSerializer, EmployerSerializer, JobPostingSerializer,
+    WorkerProfileSerializer, WorkerRegistrationSerializer, EmployerSerializer, JobPostingSerializer,
     JobPostingCreateSerializer, ApplicationSerializer, ApplicationCreateSerializer,
     MatchScoreSerializer
 )
@@ -23,6 +23,20 @@ class WorkerProfileViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         # Allow access to all worker profiles for matching purposes
         return WorkerProfile.objects.all()
+    
+    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
+    def register(self, request):
+        """Custom registration endpoint for workers"""
+        serializer = WorkerRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            worker = serializer.save()
+            # Return the created worker with the standard serializer
+            response_serializer = WorkerProfileSerializer(worker)
+            return Response({
+                'message': 'Worker registered successfully',
+                'worker': response_serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class EmployerViewSet(viewsets.ModelViewSet):

@@ -9,6 +9,21 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'email', 'first_name', 'last_name']
 
 
+class WorkerRegistrationSerializer(serializers.ModelSerializer):
+    """Serializer for worker registration from frontend"""
+    name = serializers.CharField(write_only=True, help_text="Worker's full name")
+    
+    class Meta:
+        model = WorkerProfile
+        fields = ['name', 'phone_number', 'location', 'experience_level', 'skills', 'preferred_job_types']
+    
+    def create(self, validated_data):
+        # Map 'name' to 'full_name' 
+        name = validated_data.pop('name')
+        validated_data['full_name'] = name
+        return super().create(validated_data)
+
+
 class WorkerProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     

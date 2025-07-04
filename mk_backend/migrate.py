@@ -7,7 +7,6 @@ import os
 import sys
 import django
 from django.core.management import execute_from_command_line
-from django.contrib.auth.models import User
 
 def setup_django():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mkononi_backend.settings')
@@ -20,6 +19,7 @@ def run_migrations():
     print("✅ Migrations completed")
 
 def create_superuser():
+    from django.contrib.auth.models import User
     print("Creating superuser...")
     try:
         if not User.objects.filter(username='admin').exists():

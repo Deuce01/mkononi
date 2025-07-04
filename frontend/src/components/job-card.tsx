@@ -32,11 +32,14 @@ export default function JobCard({ job }: JobCardProps) {
         </CardContent>
         <CardFooter className="flex justify-between items-center">
           <div className="flex flex-wrap gap-1">
-            {job.skills.slice(0, 2).map((skill) => (
+            {Array.isArray(job.skills) && job.skills.slice(0, 2).map((skill) => (
               <Badge key={skill} variant="secondary">
                 {skill}
               </Badge>
             ))}
+            {(!Array.isArray(job.skills) || job.skills.length === 0) && (
+              <Badge variant="secondary">No skills listed</Badge>
+            )}
           </div>
           <div className="flex items-center gap-1 text-primary opacity-0 group-hover:opacity-100 transition-opacity">
             <span>View Job</span>

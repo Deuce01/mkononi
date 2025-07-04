@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import api from '@/lib/api';
+import { useApplyToJob } from '@/hooks/use-api';
 
 interface JobApplicationFormProps {
   jobId: number;
@@ -16,19 +16,14 @@ interface JobApplicationFormProps {
 
 export default function JobApplicationForm({ jobId, jobTitle, onSuccess }: JobApplicationFormProps) {
   const [phone, setPhone] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { applyToJob, loading: isLoading } = useApplyToJob();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
     try {
-      await api.post('/applications/', {
-        job: jobId,
-        worker_phone: phone,
-        channel: 'web'
-      });
+      await applyToJob(jobId, phone);
 
       toast({
         title: 'Application Submitted!',
@@ -40,11 +35,9 @@ export default function JobApplicationForm({ jobId, jobTitle, onSuccess }: JobAp
     } catch (error: any) {
       toast({
         title: 'Application Failed',
-        description: error.response?.data?.detail || 'Failed to submit application. Please try again.',
+        description: error.message || 'Failed to submit application. Please try again.',
         variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 

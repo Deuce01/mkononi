@@ -1,15 +1,11 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import JobsDisplay from '@/components/jobs-display';
-import api from '@/lib/api';
-import type { ApiJob } from '@/lib/data';
+import { useJobs } from '@/hooks/use-api';
+import { utils } from '@/lib/api-service';
 
 export default function BrowseJobsPage() {
-  const [allJobs, setAllJobs] = useState<ApiJob[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
   const [filters, setFilters] = useState({
     search: '',
     location: '',
@@ -17,54 +13,52 @@ export default function BrowseJobsPage() {
     minPay: '',
   });
 
-  const fetchJobs = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      if (filters.search) params.append('skills', filters.search);
-      if (filters.location) params.append('location', filters.location);
-      if (filters.jobType) params.append('job_type', filters.jobType);
-      if (filters.minPay) params.append('min_pay', filters.minPay);
-
-      const response = await api.get('/jobs/', { params });
-      setAllJobs(response.data);
-    } catch (err) {
-      setError('Failed to fetch jobs. Please try again later.');
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
+  // Create API parameters from filters
+  const apiParams = useMemo(() => {
+    const params: any = {};
+    if (filters.search) params.search = filters.search;
+    if (filters.location) params.location = filters.location;
+    if (filters.jobType) params.job_type = filters.jobType;
+    if (filters.minPay) params.min_pay = Number(filters.minPay);
+    return params;
   }, [filters]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchJobs();
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [fetchJobs]);
+  const { jobs: backendJobs, loading: isLoading, error, total } = useJobs(apiParams);
 
   const { uniqueLocations, uniqueJobTypes } = useMemo(() => {
-    if (!allJobs || allJobs.length === 0) return { uniqueLocations: [], uniqueJobTypes: [] };
-    const locations = [...new Set(allJobs.map(job => job.location).filter(Boolean))];
-    const jobTypes = [...new Set(allJobs.map(job => job.type).filter(Boolean))];
+    if (!backendJobs || backendJobs.length === 0) return { uniqueLocations: [], uniqueJobTypes: [] };
+    const locations = [...new Set(backendJobs.map(job => job.location).filter(Boolean))];
+    const jobTypes = [...new Set(backendJobs.map(job => utils.formatJobType(job.job_type)).filter(Boolean))];
     return { uniqueLocations: locations, uniqueJobTypes: jobTypes };
-  }, [allJobs]);
+  }, [backendJobs]);
 
+  // Map backend jobs to frontend format
   const mappedJobs = useMemo(() => {
-    return allJobs.map(job => ({
+    return backendJobs.map(job => {
+      // Handle required_skills - it might be a string or array
+      let skills: string[] = [];
+      if (Array.isArray(job.required_skills)) {
+        skills = job.required_skills;
+      } else if (typeof job.required_skills === 'string') {
+        // If it's a string, split by comma or treat as single skill
+        skills = job.required_skills.includes(',') 
+          ? job.required_skills.split(',').map(s => s.trim())
+          : [job.required_skills];
+      }
+
+      return {
         id: job.id,
         title: job.title,
-        company: job.employer.name,
+        company: job.employer_name,
         location: job.location,
-        type: job.type,
-        payRate: job.pay_rate,
-        skills: job.skills.map(s => s.name),
+        type: utils.formatJobType(job.job_type) as 'Full-time' | 'Part-time' | 'Contract',
+        payRate: parseFloat(job.pay_rate),
+        skills: skills,
         description: job.description,
-        requirements: job.requirements || []
-    }));
-  }, [allJobs]);
+        requirements: [] // You can add requirements field to backend model if needed
+      };
+    });
+  }, [backendJobs]);
 
   return (
     <div className="space-y-8">

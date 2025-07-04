@@ -1,21 +1,27 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import api from '@/lib/api';
+import * as z from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { experienceLevels, jobTypes } from '@/lib/data';
-import { Checkbox } from '@/components/ui/checkbox';
+import { authService } from '@/lib/api-service';
 
-// Assuming a static list of skills for now. In a real app, this might be fetched.
+// Skills available for workers
 const allSkills = [
   'Plumbing', 'Pipe fitting', 'Leak detection', 'Electrical wiring', 'Circuit installation',
   'Troubleshooting', 'Carpentry', 'Woodworking', 'Furniture assembly', 'Logistics',
@@ -23,13 +29,21 @@ const allSkills = [
   'Painting', 'Repairs', 'Maintenance'
 ];
 
+// Experience levels that match backend choices
+const experienceLevels = [
+  { value: 'entry', label: 'Entry Level' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'experienced', label: 'Experienced' },
+  { value: 'expert', label: 'Expert' }
+];
+
+// Schema that matches the backend WorkerRegistration interface
 const workerSchema = z.object({
-  name: z.string().min(1, 'Full name is required'),
+  full_name: z.string().min(1, 'Full name is required'),
   phone_number: z.string().min(10, 'Please enter a valid phone number'),
   location: z.string().min(1, 'Location is required'),
-  experience_level: z.string().min(1, 'Please select your experience level'),
+  experience_level: z.enum(['entry', 'intermediate', 'experienced', 'expert']),
   skills: z.array(z.string()).min(1, 'Please select at least one skill'),
-  preferred_job_types: z.array(z.string()).min(1, 'Please select at least one job type'),
 });
 
 type WorkerFormValues = z.infer<typeof workerSchema>;
@@ -42,29 +56,28 @@ export default function RegisterWorkerPage() {
   const form = useForm<WorkerFormValues>({
     resolver: zodResolver(workerSchema),
     defaultValues: {
-      name: '',
+      full_name: '',
       phone_number: '',
       location: '',
-      experience_level: '',
+      experience_level: 'entry',
       skills: [],
-      preferred_job_types: [],
     },
   });
 
   const onSubmit = async (data: WorkerFormValues) => {
     setIsLoading(true);
     try {
-      await api.post('/workers/register/', data);
+      const response = await authService.registerWorker(data);
       toast({
         title: 'Registration Successful',
-        description: `Welcome, ${data.name}! You can now browse and apply for jobs.`,
+        description: `Welcome, ${data.full_name}! You can now browse and apply for jobs.`,
       });
       router.push('/jobs');
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Registration Failed',
-        description: error.response?.data?.detail || 'An unexpected error occurred. Please try again.',
+        description: error.response?.data?.error || 'An unexpected error occurred. Please try again.',
       });
     } finally {
       setIsLoading(false);
@@ -89,7 +102,7 @@ export default function RegisterWorkerPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField control={form.control} name="name" render={({ field }) => (
+                <FormField control={form.control} name="full_name" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Full Name</FormLabel>
                     <FormControl><Input placeholder="e.g. Juma Otieno" {...field} /></FormControl>
@@ -99,7 +112,7 @@ export default function RegisterWorkerPage() {
                 <FormField control={form.control} name="phone_number" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Phone Number (WhatsApp)</FormLabel>
-                    <FormControl><Input type="tel" placeholder="e.g. 0712345678" {...field} /></FormControl>
+                    <FormControl><Input type="tel" placeholder="e.g. +254712345678" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -119,7 +132,7 @@ export default function RegisterWorkerPage() {
                       <FormControl><SelectTrigger><SelectValue placeholder="Select your experience level" /></SelectTrigger></FormControl>
                       <SelectContent>
                         {experienceLevels.map((level) => (
-                          <SelectItem key={level} value={level}>{level}</SelectItem>
+                          <SelectItem key={level.value} value={level.value}>{level.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -161,47 +174,6 @@ export default function RegisterWorkerPage() {
                           )}
                         />
                       ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="preferred_job_types"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Preferred Job Types</FormLabel>
-                     <div className="flex items-center gap-8 rounded-md border p-4">
-                        {jobTypes.map((item) => (
-                            <FormField
-                            key={item}
-                            control={form.control}
-                            name="preferred_job_types"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                    <Checkbox
-                                    checked={field.value?.includes(item)}
-                                    onCheckedChange={(checked) => {
-                                        return checked
-                                        ? field.onChange([...(field.value || []), item])
-                                        : field.onChange(
-                                            field.value?.filter(
-                                                (value) => value !== item
-                                            )
-                                            );
-                                    }}
-                                    />
-                                </FormControl>
-                                <FormLabel className="font-normal">
-                                    {item}
-                                </FormLabel>
-                                </FormItem>
-                            )}
-                            />
-                        ))}
                     </div>
                     <FormMessage />
                   </FormItem>

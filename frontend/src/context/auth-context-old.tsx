@@ -94,16 +94,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAuthenticated = authService.isAuthenticated() && user !== null;
+      setIsLoading(false);
+    }
+  }, []);
+
+  const login = async (data: any) => {
+    const response = await api.post('/auth/token/', data);
+    const { access, refresh } = response.data;
+    localStorage.setItem('accessToken', access);
+    localStorage.setItem('refreshToken', refresh);
+    setToken(access);
+    await fetchUser(access);
+  };
+
+  const register = async (data: any) => {
+    // Assuming a registration endpoint
+    await api.post('auth/register/employer/', data);
+  };
+
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    delete api.defaults.headers.Authorization;
+    
+    // Only show toast if not already on a public page
+    if (pathname.includes('/dashboard')) {
+       toast({
+        title: "Logged out",
+        description: "You have been successfully logged out."
+       });
+    }
+    router.push('/employer/login');
+  };
+  
+  const isAuthenticated = !!token;
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      login,
-      register,
-      logout,
-      isLoading,
-      isAuthenticated
-    }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, isLoading, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

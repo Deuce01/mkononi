@@ -1,0 +1,7 @@
+{
+  "phone_number": "+254700123456",
+  "full_name": "John Doe",
+  "location": "Nairobi",
+  "skills": ["plumbing", "electrical"],
+  "experience_level": "intermediate"
+}
