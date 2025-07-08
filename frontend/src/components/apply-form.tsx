@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
-import api from '@/lib/api';
+import { applicationService } from '@/lib/api-service';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -41,9 +41,10 @@ export default function ApplyForm({ jobId }: { jobId: number }) {
   const onSubmit = async (data: ApplyFormValues) => {
     setIsLoading(true);
     try {
-      await api.post('/applications/', {
+      await applicationService.createApplication({
         job: jobId,
-        phone_number: data.phone_number,
+        worker_phone: data.phone_number,
+        channel: 'web',
       });
       setIsDialogOpen(true);
       form.reset();

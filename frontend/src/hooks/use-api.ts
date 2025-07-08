@@ -213,6 +213,8 @@ export function useApplyToJob() {
         channel: 'web',
         worker_phone: workerPhone
       });
+      console.log(application);
+      
       return application;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to apply to job';

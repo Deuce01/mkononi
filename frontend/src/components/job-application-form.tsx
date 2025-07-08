@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { useApplyToJob } from '@/hooks/use-api';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { useApplyToJob } from "@/hooks/use-api";
 
 interface JobApplicationFormProps {
   jobId: number;
@@ -14,8 +14,12 @@ interface JobApplicationFormProps {
   onSuccess?: () => void;
 }
 
-export default function JobApplicationForm({ jobId, jobTitle, onSuccess }: JobApplicationFormProps) {
-  const [phone, setPhone] = useState('');
+export default function JobApplicationForm({
+  jobId,
+  jobTitle,
+  onSuccess,
+}: JobApplicationFormProps) {
+  const [phone, setPhone] = useState("");
   const { toast } = useToast();
   const { applyToJob, loading: isLoading } = useApplyToJob();
 
@@ -24,19 +28,20 @@ export default function JobApplicationForm({ jobId, jobTitle, onSuccess }: JobAp
 
     try {
       await applyToJob(jobId, phone);
-
+      console.log("Application submitted:", { jobId, phone });
       toast({
-        title: 'Application Submitted!',
+        title: "Application Submitted!",
         description: `Your application for ${jobTitle} has been submitted successfully.`,
       });
 
-      setPhone('');
+      setPhone("");
       onSuccess?.();
     } catch (error: any) {
       toast({
-        title: 'Application Failed',
-        description: error.message || 'Failed to submit application. Please try again.',
-        variant: 'destructive',
+        title: "Application Failed",
+        description:
+          error.message || "Failed to submit application. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -62,9 +67,9 @@ export default function JobApplicationForm({ jobId, jobTitle, onSuccess }: JobAp
               Enter your phone number to apply. No CV required!
             </p>
           </div>
-          
+
           <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? 'Submitting...' : 'Apply Now'}
+            {isLoading ? "Submitting..." : "Apply Now"}
           </Button>
         </form>
       </CardContent>
