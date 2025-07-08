@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import api from '@/lib/api';
-import type { EmployerJob } from '@/lib/data';
+import { jobService } from '@/lib/api-service';
+import type { JobPosting } from '@/lib/api-service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -25,26 +25,55 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
 
-export default function MyJobsPage() {
-  const [jobs, setJobs] = useState<EmployerJob[]>([]);
+export default function EmployerDashboardPage() {
+  const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/employer/login');
+      return;
+    }
+
     const fetchJobs = async () => {
       try {
-        const response = await api.get('/jobs/');
-        setJobs(response.data);
-      } catch (err) {
-        setError('Failed to fetch jobs. Please try again later.');
+        const response = await jobService.getMyJobs();
+        setJobs(response.results);
+      } catch (err: any) {
+        if (err.response?.status === 401) {
+          router.push('/employer/login');
+        } else {
+          setError('Failed to fetch jobs. Please try again later.');
+        }
         console.error(err);
       } finally {
         setIsLoading(false);
       }
     };
+    
     fetchJobs();
-  }, []);
+  }, [isAuthenticated, router]);
+
+  const formatJobType = (type: string) => {
+    switch (type) {
+      case 'full_time':
+        return 'Full-time';
+      case 'part_time':
+        return 'Part-time';
+      case 'contract':
+        return 'Contract';
+      case 'temporary':
+        return 'Temporary';
+      default:
+        return type;
+    }
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -88,7 +117,7 @@ export default function MyJobsPage() {
                     </TableCell>
                 </TableRow>
             </TableBody>
-        )
+        );
     }
 
     return (
@@ -97,10 +126,10 @@ export default function MyJobsPage() {
           <TableRow key={job.id}>
             <TableCell className="font-medium">{job.title}</TableCell>
             <TableCell>
-              <Badge variant="outline">{job.type}</Badge>
+              <Badge variant="outline">{formatJobType(job.job_type)}</Badge>
             </TableCell>
-            <TableCell>{job.applicants_count || 0}</TableCell>
-            <TableCell>{new Date(job.posted_date).toLocaleDateString()}</TableCell>
+            <TableCell>{job.applications_count || 0}</TableCell>
+            <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
             <TableCell className="text-right">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -110,7 +139,7 @@ export default function MyJobsPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem>
-                    <Link href="/employer/dashboard/applications">View Applicants</Link>
+                    <Link href={`/employer/dashboard/applications?job=${job.id}`}>View Applicants</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>Edit</DropdownMenuItem>
                   <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
@@ -126,7 +155,14 @@ export default function MyJobsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-headline font-bold">My Jobs</h1>
+        <div>
+          <h1 className="text-2xl font-headline font-bold">My Jobs</h1>
+          {user && user.user_type === 'employer' && (
+            <p className="text-muted-foreground">
+              Welcome back, {user.profile.company_name}
+            </p>
+          )}
+        </div>
         <Button asChild>
           <Link href="/employer/dashboard/post-job">
             <PlusCircle className="mr-2 h-4 w-4" /> Post New Job
