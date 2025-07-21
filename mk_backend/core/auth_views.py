@@ -96,13 +96,7 @@ def register_employer(request):
             "phone_number"
         )  # Support both field names
         sector = data.get("sector")
-        
-        # print({
-        #     "company_name": company_name,
-        #     "email": email,
-        #     "phone": phone,
-        #     "sector": sector,
-        # })
+        # Validate required fields
         if not all([email, password, company_name, phone, sector]):
             return Response(
                 {
@@ -302,10 +296,10 @@ def get_user_profile(request):
             }
         )
 
-    # Check if user is an employer
-    elif hasattr(user, "employer"):
+    # Check if user is an employer - Fix: should be employer_profile
+    elif hasattr(user, "employer_profile"):
         return Response(
-            {"user_type": "employer", "profile": EmployerSerializer(user.employer).data}
+            {"user_type": "employer", "profile": EmployerSerializer(user.employer_profile).data}
         )
 
     else:

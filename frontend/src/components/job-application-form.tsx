@@ -28,7 +28,6 @@ export default function JobApplicationForm({
 
     try {
       await applyToJob(jobId, phone);
-      console.log("Application submitted:", { jobId, phone });
       toast({
         title: "Application Submitted!",
         description: `Your application for ${jobTitle} has been submitted successfully.`,

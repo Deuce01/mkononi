@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
-import { 
-  jobService, 
-  workerService, 
-  applicationService, 
+import { useState, useEffect } from "react";
+import {
+  jobService,
+  workerService,
+  applicationService,
   authService,
-  JobPosting, 
-  WorkerProfile, 
+  JobPosting,
+  WorkerProfile,
   Application,
-  JobMatch
-} from '../lib/api-service';
+  JobMatch,
+} from "../lib/api-service";
 
 // Custom hook for fetching jobs
 export function useJobs(params?: {
@@ -33,7 +33,7 @@ export function useJobs(params?: {
         setTotal(response.count);
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch jobs');
+        setError(err instanceof Error ? err.message : "Failed to fetch jobs");
       } finally {
         setLoading(false);
       }
@@ -42,7 +42,13 @@ export function useJobs(params?: {
     fetchJobs();
   }, [JSON.stringify(params)]);
 
-  return { jobs, loading, error, total, refetch: () => window.location.reload() };
+  return {
+    jobs,
+    loading,
+    error,
+    total,
+    refetch: () => window.location.reload(),
+  };
 }
 
 // Custom hook for fetching single job
@@ -59,7 +65,7 @@ export function useJob(id: number) {
         setJob(jobData);
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch job');
+        setError(err instanceof Error ? err.message : "Failed to fetch job");
       } finally {
         setLoading(false);
       }
@@ -87,7 +93,9 @@ export function useJobMatches(jobId: number) {
         setMatches(matchData);
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch matches');
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch matches"
+        );
       } finally {
         setLoading(false);
       }
@@ -115,7 +123,9 @@ export function useApplications() {
         setApplications(response.results);
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch applications');
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch applications"
+        );
       } finally {
         setLoading(false);
       }
@@ -124,15 +134,23 @@ export function useApplications() {
     fetchApplications();
   }, []);
 
-  const updateStatus = async (id: number, status: 'pending' | 'accepted' | 'rejected') => {
+  const updateStatus = async (
+    id: number,
+    status: "pending" | "accepted" | "rejected"
+  ) => {
     try {
-      const updatedApp = await applicationService.updateApplicationStatus(id, status);
-      setApplications(prev => 
-        prev.map(app => app.id === id ? updatedApp : app)
+      const updatedApp = await applicationService.updateApplicationStatus(
+        id,
+        status
+      );
+      setApplications((prev) =>
+        prev.map((app) => (app.id === id ? updatedApp : app))
       );
       return updatedApp;
     } catch (err) {
-      throw new Error(err instanceof Error ? err.message : 'Failed to update application');
+      throw new Error(
+        err instanceof Error ? err.message : "Failed to update application"
+      );
     }
   };
 
@@ -146,16 +164,16 @@ export function useAuth() {
 
   useEffect(() => {
     const checkAuth = () => {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem("access_token");
       setIsAuthenticated(!!token);
       setLoading(false);
     };
 
     checkAuth();
-    
+
     // Listen for storage changes (login/logout in other tabs)
-    window.addEventListener('storage', checkAuth);
-    return () => window.removeEventListener('storage', checkAuth);
+    window.addEventListener("storage", checkAuth);
+    return () => window.removeEventListener("storage", checkAuth);
   }, []);
 
   const login = async (credentials: { username: string; password: string }) => {
@@ -188,7 +206,8 @@ export function useCreateJob() {
       const newJob = await jobService.createJob(jobData);
       return newJob;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create job';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to create job";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
@@ -208,16 +227,17 @@ export function useApplyToJob() {
     try {
       setLoading(true);
       setError(null);
+      
       const application = await applicationService.createApplication({
         job: jobId,
-        channel: 'web',
-        worker_phone: workerPhone
+        channel: "web",
+        worker_phone: workerPhone,
       });
-      console.log(application);
-      
+
       return application;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to apply to job';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to apply to job";
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {

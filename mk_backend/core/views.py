@@ -157,7 +157,6 @@ class ApplicationViewSet(viewsets.ModelViewSet):
         else:
             raise permissions.PermissionDenied("Worker identification required.")
     
-    
     @action(detail=True, methods=['patch'])
     def update_status(self, request, pk=None):
         """Update application status (for employers only)"""

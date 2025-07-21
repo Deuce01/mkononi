@@ -86,13 +86,7 @@ class ApplicationCreateSerializer(serializers.ModelSerializer):
         if not job.is_open:
             raise serializers.ValidationError("This job is no longer accepting applications.")
         
-        # Store worker in context for perform_create to use
-        self.context['worker'] = worker
-        
-        # Remove worker_phone from data since it's not a model field
-        if 'worker_phone' in data:
-            del data['worker_phone']
-            
+        data['worker'] = worker
         return data
 
 
