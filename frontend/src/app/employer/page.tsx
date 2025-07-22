@@ -34,7 +34,7 @@ export default function EmployerPage() {
   }
 
   console.log(user?.user_type);
-  
+
   // Show different content based on auth state
   if (isAuthenticated && user?.user_type !== "employer") {
     return (
@@ -43,7 +43,8 @@ export default function EmployerPage() {
           Access Restricted
         </h2>
         <p className="text-muted-foreground">
-          This area is for employers only. You're logged in as a {user?.user_type}.
+          This area is for employers only. You're logged in as a{" "}
+          {user?.user_type}.
         </p>
         <Button asChild variant="outline">
           <Link href="/">Go to Homepage</Link>
@@ -60,8 +61,8 @@ export default function EmployerPage() {
           Hire Skilled Workers, Fast
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-          Access a pool of vetted, reliable blue-collar professionals. Post
-          jobs and manage applications all in one place.
+          Access a pool of vetted, reliable blue-collar professionals. Post jobs
+          and manage applications all in one place.
         </p>
       </header>
 
@@ -79,7 +80,7 @@ export default function EmployerPage() {
           <Link href="/employer/register">Register as Employer</Link>
         </Button>
       </div>
-
+      {/* Additional features section */}
       {/* Additional features section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 max-w-4xl">
         <div className="text-center space-y-2">
