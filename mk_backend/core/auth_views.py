@@ -296,7 +296,7 @@ def get_user_profile(request):
             }
         )
 
-    # Check if user is an employer - Fix: should be employer_profile
+    # Check if user is an employer
     elif hasattr(user, "employer_profile"):
         return Response(
             {"user_type": "employer", "profile": EmployerSerializer(user.employer_profile).data}

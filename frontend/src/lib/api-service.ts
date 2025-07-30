@@ -107,8 +107,38 @@ export interface AuthResponse {
   refresh: string;
 }
 
+// diff functions declaration in javascript
+function myFunction() {
+  // Placeholder for future implementation
+}
+const myFunction2 = async function() {
+  // Placeholder for future implementation
+}
+
+const loot = {
+  myFunction4: function() {
+    // Placeholder for future implementation
+  },
+  myFunction5: () => {
+    // Placeholder for future implementation
+  },
+  logon () {
+    // Placeholder for future implementation
+  }
+}
+console.log(loot.logon());
+
+const myFunction3 = () => {
+  // Placeholder for future implementation
+}
+
+
+
 // API Service functions
 export const authService = {
+  // async lll(){
+  //   // Placeholder for future implementation
+  // }
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await api.post("/auth/token/", credentials);
     return response.data;
@@ -175,7 +205,7 @@ export const authService = {
     const response = await api.get("/auth/profile/");
     return response.data;
   },
-
+  
   async refreshToken(refresh: string): Promise<{ access: string }> {
     const response = await api.post("/auth/token/refresh/", { refresh });
     return response.data;
@@ -195,6 +225,9 @@ export const authService = {
     return !!localStorage.getItem("access_token");
   },
 };
+
+console.log(authService.getUserProfile());
+
 
 export const jobService = {
   async getJobs(params?: {
